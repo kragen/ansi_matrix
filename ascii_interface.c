@@ -53,7 +53,7 @@ void change_cell(int x, int y, char change) {
   } else if (strcmp(lab, "x") == 0) {
     labels[y][x] = "";
   } else if (strpbrk(lab, "0123456789")) {
-    int num;
+    int num, inc = (change == ' ' || change == '+') ? 1 : -1;
     if (!allocated_labels[y][x]) {
       allocated_labels[y][x] = malloc(label_size);
       strcpy(allocated_labels[y][x], labels[y][x]);
@@ -66,7 +66,9 @@ void change_cell(int x, int y, char change) {
     lab = allocated_labels[y][x];
     numloc = strpbrk(lab, "0123456789");
     num = atoi(numloc);
-    sprintf(numloc, "%d", num + 1);
+    num += inc;
+    if (num < 0) num = 0;
+    sprintf(numloc, "%d", num);
   }
 }
 
@@ -113,7 +115,8 @@ int main() {
     case 'j': y = (y + 1 + n_rows)    % n_rows;    break;
     case 'k': y = (y - 1 + n_rows)    % n_rows;    break;
     case 'l': x = (x + 1 + n_columns) % n_columns; break;
-    case ' ': change_cell(x, y, c); break;
+    case ' ': case '+': case '-': case '\b': case '\x7f':
+      change_cell(x, y, c); break;
     case '\e': case 'q': case 'x': done = 1; break;
     }
   }
