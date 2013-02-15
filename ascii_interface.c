@@ -22,7 +22,7 @@ char *labels[n_rows][n_columns] = {
   {"-",         "sa",  "sb",  "sc",  "pa",  "pb",  "pc",  "xa",  "xb",  "xc",  "audio<<9"},
 };
 char *allocated_labels[n_rows][n_columns];
-enum { label_size = 16 }; /* max allocated size */
+enum { label_size = 64 }; /* max allocated size */
 
 enum { stdin_fd = 0 };
 struct termios old_termios, new_termios;
@@ -53,6 +53,7 @@ void change_cell(int x, int y, char change) {
   } else if (strcmp(lab, "x") == 0) {
     labels[y][x] = "";
   } else if (strpbrk(lab, "0123456789")) {
+    int num;
     if (!allocated_labels[y][x]) {
       allocated_labels[y][x] = malloc(label_size);
       strcpy(allocated_labels[y][x], labels[y][x]);
@@ -64,7 +65,8 @@ void change_cell(int x, int y, char change) {
     }
     lab = allocated_labels[y][x];
     numloc = strpbrk(lab, "0123456789");
-    *numloc = 0;
+    num = atoi(numloc);
+    sprintf(numloc, "%d", num + 1);
   }
 }
 
