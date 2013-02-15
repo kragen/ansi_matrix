@@ -140,7 +140,7 @@ unsigned char scan_column(char cathode_pin) {
   unsigned char rv = 0;
   for (signed char i = nrows-1; i >= 0; --i) {
     rv <<= 1;
-    if (pin_time[i] == -1) rv++;
+    if (pin_time[i] != -1) rv++;
   }
 
   return rv;
