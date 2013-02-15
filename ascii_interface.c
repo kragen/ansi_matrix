@@ -59,18 +59,22 @@ char *editable_label(int x, int y) {
   return allocated_labels[y][x];
 }
 
+char *num_of(char *label) {
+  return strpbrk(label, "0123456789");
+}
+
 void change_cell(int x, int y, char change) {
-  char *lab = labels[y][x], *numloc;
+  char *lab = labels[y][x];
   if (!strlen(lab)) {
     labels[y][x] = "x";
   } else if (strcmp(lab, "x") == 0) {
     labels[y][x] = "";
-  } else if (strpbrk(lab, "0123456789")) {
-    int num, inc = (change == ' ' || change == '+') ? 1 : -1;
-    lab = editable_label(x, y);
-    numloc = strpbrk(lab, "0123456789");
+  } else if (num_of(lab)) {
+    char *numloc;
+    int num;
+    numloc = num_of(editable_label(x, y));
     num = atoi(numloc);
-    num += inc;
+    num += (change == ' ' || change == '+') ? 1 : -1;
     if (num < 0) num = 0;
     sprintf(numloc, "%d", num);
   }
