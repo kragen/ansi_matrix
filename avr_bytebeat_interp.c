@@ -286,7 +286,7 @@ void disassemble_op(int op_index, char *dest) {
   case op_and: format = "a &= r[%d];"; break;
   case op_clear: format = "a = -1;"; break;
   case op_set: format = "r[%d] = a;"; break;
-  case op_add: format = "r[%d) += a;"; break;
+  case op_add: format = "r[%d] += a;"; break;
   case op_mul: format = "r[%d] *= a;"; break;
   case op_xor: format = "r[%d] ^= a;"; break;
   }
