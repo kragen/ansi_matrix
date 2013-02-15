@@ -186,7 +186,7 @@ static inline void populate_t_row(row_id row_num, char shift) {
   rows[row_num][3] = t   >> shift;
 }
 
-buf *interpret_ops() {
+sample *interpret_ops() {
   unsigned char op;             /* max_ops < 256 */
 
   /* XXX maybe only do these if they're needed? */
