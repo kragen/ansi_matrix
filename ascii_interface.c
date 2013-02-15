@@ -46,6 +46,19 @@ void restore_terminal() {
   tcsetattr(stdin_fd, TCSANOW, &old_termios);
 }
 
+char *editable_label(int x, int y) {
+  if (!allocated_labels[y][x]) {
+    allocated_labels[y][x] = malloc(label_size);
+    strcpy(allocated_labels[y][x], labels[y][x]);
+    labels[y][x] = allocated_labels[y][x];
+  }
+  if (!allocated_labels[y][x]) {
+    perror("malloc");
+    abort();
+  }
+  return allocated_labels[y][x];
+}
+
 void change_cell(int x, int y, char change) {
   char *lab = labels[y][x], *numloc;
   if (!strlen(lab)) {
@@ -54,16 +67,7 @@ void change_cell(int x, int y, char change) {
     labels[y][x] = "";
   } else if (strpbrk(lab, "0123456789")) {
     int num, inc = (change == ' ' || change == '+') ? 1 : -1;
-    if (!allocated_labels[y][x]) {
-      allocated_labels[y][x] = malloc(label_size);
-      strcpy(allocated_labels[y][x], labels[y][x]);
-      labels[y][x] = allocated_labels[y][x];
-    }
-    if (!allocated_labels[y][x]) {
-      perror("malloc");
-      abort();
-    }
-    lab = allocated_labels[y][x];
+    lab = editable_label(x, y);
     numloc = strpbrk(lab, "0123456789");
     num = atoi(numloc);
     num += inc;
