@@ -170,10 +170,10 @@ enum {
 
 static inline void populate_t_row(row_id row_num, char shift) {
   register sample t = configuration.t;
-  rows[row_num][0] = t++ >> shift;
-  rows[row_num][1] = t++ >> shift;
-  rows[row_num][2] = t++ >> shift;
-  rows[row_num][3] = t   >> shift;
+  rows[row_num][0] = t++ << shift;
+  rows[row_num][1] = t++ << shift;
+  rows[row_num][2] = t++ << shift;
+  rows[row_num][3] = t   << shift;
 }
 
 sample *interpret_ops() {
