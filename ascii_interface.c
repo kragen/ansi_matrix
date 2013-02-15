@@ -129,6 +129,8 @@ void update_columns() {
   }
 }
 
+int unused_result;
+
 void change_cell(int x, int y, char change) {
   char *lab = labels[y][x];
   if (!strlen(lab)) {
@@ -143,7 +145,7 @@ void change_cell(int x, int y, char change) {
     int num;
     numloc = num_of(labels[y][x]);
     num = atoi(numloc);
-    strtol(num_of(original_labels[y][x]), &tail, 10);
+    unused_result = strtol(num_of(original_labels[y][x]), &tail, 10);
     num += (change == ' ' || change == '+') ? 1 : -1;
     if (num < 0) num = 0;
     sprintf(numloc, "%d%s", num, tail);

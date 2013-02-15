@@ -294,7 +294,7 @@ void compile_matrix() {
 /* not going to include the disassembler in the AVR microcontroller */
 
 void disassemble_op(int op_index, char *dest) {
-  char *format;
+  char *format = "INVALID OPCODE";
   int row_id = get_row_id(ops[op_index]);
   switch(get_opcode(ops[op_index])) {
   case op_and: format = "a &= r[%d];"; break;
