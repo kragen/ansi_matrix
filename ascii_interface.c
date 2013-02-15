@@ -21,7 +21,8 @@ char *labels[n_rows][n_columns] = {
   {"sa+sb+sc",  "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x"},
   {"-",         "sa",  "sb",  "sc",  "pa",  "pb",  "pc",  "xa",  "xb",  "xc",  "audio<<9"},
 };
-int column_width[n_columns];
+char *allocated_labels[n_rows][n_columns];
+enum { label_size = 16 }; /* max allocated size */
 
 enum { stdin_fd = 0 };
 struct termios old_termios, new_termios;
@@ -46,16 +47,39 @@ void restore_terminal() {
 }
 
 void change_cell(int x, int y, char change) {
-  char *lab = labels[y][x];
+  char *lab = labels[y][x], *numloc;
   if (!strlen(lab)) {
     labels[y][x] = "x";
   } else if (strcmp(lab, "x") == 0) {
     labels[y][x] = "";
+  } else if (strpbrk(lab, "0123456789")) {
+    if (!allocated_labels[y][x]) {
+      allocated_labels[y][x] = malloc(label_size);
+      strcpy(allocated_labels[y][x], labels[y][x]);
+      labels[y][x] = allocated_labels[y][x];
+    }
+    if (!allocated_labels[y][x]) {
+      perror("malloc");
+      abort();
+    }
+    lab = allocated_labels[y][x];
+    numloc = strpbrk(lab, "0123456789");
+    *numloc = 0;
   }
 }
 
 void draw_table(int x, int y) {
   int i, j;
+  int column_width[n_columns];
+
+  for (i = 0; i < n_columns; i++) {
+    column_width[i] = 0;
+    for (j = 0; j < n_rows; j++) {
+      int len = strlen(labels[j][i]);
+      if (len > column_width[i]) column_width[i] = len;
+    }
+  }
+
   for (i = 0; i < n_rows; i++) {
     for (j = 0; j < n_columns; j++) {
       char *after = "";
@@ -70,16 +94,9 @@ void draw_table(int x, int y) {
 }
 
 int main() {
-  int i, j, x = 2, y = 4;
+  int x = 2, y = 4;
   char c;
   int done = 0;
-  for (i = 0; i < n_columns; i++) {
-    column_width[i] = 0;
-    for (j = 0; j < n_rows; j++) {
-      int len = strlen(labels[j][i]);
-      if (len > column_width[i]) column_width[i] = len;
-    }
-  }
 
   my_cbreak();
 
