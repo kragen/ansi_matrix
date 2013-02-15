@@ -136,7 +136,7 @@ static void xor_row(row_id row_num) {
 
 struct bytebeat_interp_configuration configuration;
 
-enum { max_ops = matrix_rows * matrix_cols + matrix_cols };
+enum { max_ops = (matrix_rows + 2) * matrix_cols };
 static void (*op_table[])(row_id) = {
   and_row, clear_accumulator, set_row, add_row, mul_row, xor_row
 };
