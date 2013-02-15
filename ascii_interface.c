@@ -32,12 +32,12 @@ enum { label_size = 64 }; /* max allocated size */
 
 void dump_configuration() {
   int i;
-  printf("constant = %d\r\n", configuration.constant);
+  printf("constant = %d\r\n", (int)configuration.constant);
   printf("shift1 = %d\r\n", configuration.shift1);
   printf("shift2 = %d\r\n", configuration.shift2);
   printf("shift3 = %d\r\n", configuration.shift3);
   printf("audioshift = %d\r\n", configuration.audioshift);
-  printf("t = %d\r\n", configuration.t);
+  printf("t = %d\r\n", (int)configuration.t);
   printf("columns = {");
   for (i = 0; i < LEN(configuration.columns); i++) {
     if (i) printf(", ");
