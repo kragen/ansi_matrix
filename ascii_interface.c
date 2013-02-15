@@ -15,8 +15,8 @@
 
 enum { n_columns = 11, n_rows = 8 };
 
-char *labels[n_rows][n_columns] = {
-  {"42",        "",   "",   "",   "x",  "",   "",   "",   "",   "",   ""},
+char *original_labels[n_rows][n_columns] = {
+  {"42<<6",     "",   "",   "",   "x",  "",   "",   "",   "",   "",   ""},
   {"t<<0",      "x",  "",   "",   "",   "x",  "",   "",   "",   "",   "x"},
   {"t<<8",      "",   "x",  "",   "" ,  "",   "",   "",   "",   "x",  "x"},
   {"t<<3",      "",   "",   "",   "x",  "",   "",   "",   "",   "",   ""},
@@ -25,7 +25,7 @@ char *labels[n_rows][n_columns] = {
   {"sa+sb+sc",  "",   "",   "",   "",   "",   "",   "",   "x",  "",   ""},
   {"-",         "sa",  "sb",  "sc",  "pa",  "pb",  "pc",  "xa",  "xb",  "xc",  "audio<<8"},
 };
-char *allocated_labels[n_rows][n_columns];
+char *labels[n_rows][n_columns];
 enum { label_size = 64 }; /* max allocated size */
 
 #define LEN(x) (sizeof(x)/sizeof((x)[0]))
@@ -70,17 +70,19 @@ void restore_terminal() {
   tcsetattr(stdin_fd, TCSANOW, &old_termios);
 }
 
-char *editable_label(int x, int y) {
-  if (!allocated_labels[y][x]) {
-    allocated_labels[y][x] = malloc(label_size);
-    strcpy(allocated_labels[y][x], labels[y][x]);
-    labels[y][x] = allocated_labels[y][x];
+
+void initialize_labels() {
+  int i, j;
+  for (i = 0; i < n_rows; i++) {
+    for (j = 0; j < n_columns; j++) {
+      labels[i][j] = malloc(label_size);
+      if (!labels[i][j]) {
+        perror("malloc");
+        abort();
+      }
+      strcpy(labels[i][j], original_labels[i][j]);
+    }
   }
-  if (!allocated_labels[y][x]) {
-    perror("malloc");
-    abort();
-  }
-  return allocated_labels[y][x];
 }
 
 char *num_of(char *label) {
@@ -90,7 +92,7 @@ char *num_of(char *label) {
 void update_number(int x, int y, int num) {
   if (x == 0) {
     if (y == 0) {
-      configuration.constant = num;
+      configuration.constant = num << 6;
     } else if (y == 1) {
       configuration.shift1 = num;
     } else if (y == 2) {
@@ -130,19 +132,21 @@ void update_columns() {
 void change_cell(int x, int y, char change) {
   char *lab = labels[y][x];
   if (!strlen(lab)) {
-    labels[y][x] = "x";
+    labels[y][x] = "x"; /* XXX memory leak, and below */
     update_columns();
   } else if (strcmp(lab, "x") == 0) {
     labels[y][x] = "";
     update_columns();
   } else if (num_of(lab)) {
     char *numloc;
+    char *tail;                /* stuff after number */
     int num;
-    numloc = num_of(editable_label(x, y));
+    numloc = num_of(labels[y][x]);
     num = atoi(numloc);
+    strtol(num_of(original_labels[y][x]), &tail, 10);
     num += (change == ' ' || change == '+') ? 1 : -1;
     if (num < 0) num = 0;
-    sprintf(numloc, "%d", num);
+    sprintf(numloc, "%d%s", num, tail);
     update_number(x, y, num);
   }
 }
@@ -220,6 +224,7 @@ int main() {
   int done = 0;
   int debug = 0;
 
+  initialize_labels();
   update_numbers();
   update_columns();
   gettimeofday(&last_samples, NULL);
