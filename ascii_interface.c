@@ -12,14 +12,14 @@
 enum { n_columns = 11, n_rows = 8 };
 
 char *labels[n_rows][n_columns] = {
-  {"42",        "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x"},
-  {"t<<3",      "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x"},
-  {"t<<5",      "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x"},
-  {"t<<7",      "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x"},
-  {"xa^xb^xc",  "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x"},
-  {"pa*pb*pc",  "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x"},
-  {"sa+sb+sc",  "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x",   "x"},
-  {"-",         "sa",  "sb",  "sc",  "pa",  "pb",  "pc",  "xa",  "xb",  "xc",  "audio<<9"},
+  {"42",        "",   "",   "",   "x",  "",   "",   "",   "",   "",   ""},
+  {"t<<0",      "x",  "",   "",   "",   "x",  "",   "",   "",   "",   "x"},
+  {"t<<8",      "",   "x",  "",   "x",  "",   "",   "",   "",   "x",  "x"},
+  {"t<<12",     "",   "",   "",   "",   "",   "",   "",   "",   "",   ""},
+  {"xa^xb^xc",  "",   "",   "",   "",   "",   "",   "",   "",   "",   ""},
+  {"pa*pb*pc",  "",   "",   "",   "",   "",   "",   "",   "",   "",   ""},
+  {"sa+sb+sc",  "",   "",   "",   "",   "",   "",   "",   "x",  "",   ""},
+  {"-",         "sa",  "sb",  "sc",  "pa",  "pb",  "pc",  "xa",  "xb",  "xc",  "audio<<8"},
 };
 char *allocated_labels[n_rows][n_columns];
 enum { label_size = 64 }; /* max allocated size */
@@ -171,7 +171,7 @@ void draw_table(int x, int y) {
 }
 
 int main() {
-  int x = 2, y = 4;
+  int x = 10, y = 3;
   char c;
   int done = 0;
 
