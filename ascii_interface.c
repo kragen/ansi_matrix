@@ -218,6 +218,7 @@ int main() {
   int x = 10, y = 3;
   char c;
   int done = 0;
+  int debug = 0;
 
   update_numbers();
   update_columns();
@@ -227,9 +228,12 @@ int main() {
   while (!done) {
     printf("\e[H\e[J");
     draw_table(x, y);
-    dump_configuration();
     compile_matrix();
-    dump_ops();
+
+    if (debug) {
+      dump_configuration();
+      dump_ops();
+    }
 
     while (!read(stdin_fd, &c, 1)) {
       spew_audio();
@@ -240,6 +244,7 @@ int main() {
     case 'j': y = (y + 1 + n_rows)    % n_rows;    break;
     case 'k': y = (y - 1 + n_rows)    % n_rows;    break;
     case 'l': x = (x + 1 + n_columns) % n_columns; break;
+    case 'd': debug = !debug; break;
     case ' ': case '+': case '-': case '\b': case '\x7f':
       change_cell(x, y, c); break;
     case '\e': case 'q': case 'x': done = 1; break;
