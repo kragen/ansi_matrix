@@ -7,6 +7,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "avr_bytebeat_interp.h"
+
 /* First, display a table and use cursor keys to highlight different cells. */
 
 enum { n_columns = 11, n_rows = 8 };
@@ -23,11 +25,6 @@ char *labels[n_rows][n_columns] = {
 };
 char *allocated_labels[n_rows][n_columns];
 enum { label_size = 64 }; /* max allocated size */
-
-/* Dummy to remove when integrate with avr_bytebeat_interp */
-struct {
-  int constant, shift1, shift2, shift3, audioshift, columns[n_columns-1];
-} configuration;
 
 #define LEN(x) (sizeof(x)/sizeof((x)[0]))
 

@@ -92,6 +92,9 @@ topological sorting.
  * (Or maybe a little more.)
  */
 
+static buf rows[matrix_rows];
+static buf accumulator;
+
 static void and_row(row_id row_num) {
   accumulator[0] &= rows[row_num][0];
   accumulator[1] &= rows[row_num][1];
@@ -131,7 +134,7 @@ static void xor_row(row_id row_num) {
 
 struct bytebeat_interp_configuration configuration;
 
-enum { max_ops = n_rows * n_cols + n_cols };
+enum { max_ops = matrix_rows * matrix_cols + matrix_cols };
 static void (*op_table[])(row_id) = {
   and_row, clear_accumulator, set_row, add_row, mul_row, xor_row
 };
@@ -248,7 +251,7 @@ static void compile_row(row_id row) {
 static void compile_column(unsigned char col) {
   row_id i;
 
-  for (i = 0; i < n_cols; i++) {
+  for (i = 0; i < matrix_cols; i++) {
     if ((configuration.columns[col] & 1 << i) && 
         !(already_started_computing & 1 << i)) {
       already_started_computing |= 1 << i;
@@ -257,7 +260,7 @@ static void compile_column(unsigned char col) {
   }
 
   compile(op_clear, 0);         /* unused argument */
-  for (i = 0; i < n_cols; i++) {
+  for (i = 0; i < matrix_cols; i++) {
     if (configuration.columns[col] & 1 << i) {
       compile(op_and, i);
     }
