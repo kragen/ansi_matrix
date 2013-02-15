@@ -65,12 +65,7 @@ topological sorting.
  
 */
 
-typedef short sample;
-typedef sample buf[4];
-enum { n_rows = 7, n_cols = 10 };
-static buf rows[n_rows];
-static buf accumulator;
-typedef unsigned char row_id;
+#include "avr_bytebeat_interp.h"
 
 /* A little analysis of and_row's assembly listing suggests that it spends about:
  * - 20 cycles entering the function and setting up Z
@@ -134,17 +129,7 @@ static void xor_row(row_id row_num) {
   row_op(^=);
 }
 
-// We only have 7 rows, so a char is enough to hold one bit for each, an
-// entire column.  x & (1<<n) will be true if row n is set in x.
-typedef unsigned char column;
-
-struct {
-  sample constant;
-  char shift1, shift2, shift3;  // three left shifts for t
-  char audioshift;              // right shift for audio output
-  column columns[n_cols];
-  sample t;
-} configuration;
+struct bytebeat_interp_configuration configuration;
 
 enum { max_ops = n_rows * n_cols + n_cols };
 static void (*op_table[])(row_id) = {
