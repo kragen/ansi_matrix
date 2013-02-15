@@ -4,10 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <termios.h>
 #include <unistd.h>
 
 #include "avr_bytebeat_interp.h"
+#include "sound.h"
 
 /* First, display a table and use cursor keys to highlight different cells. */
 
@@ -35,6 +37,7 @@ void dump_configuration() {
   printf("shift2 = %d\r\n", configuration.shift2);
   printf("shift3 = %d\r\n", configuration.shift3);
   printf("audioshift = %d\r\n", configuration.audioshift);
+  printf("t = %d\r\n", configuration.t);
   printf("columns = {");
   for (i = 0; i < LEN(configuration.columns); i++) {
     if (i) printf(", ");
@@ -55,6 +58,8 @@ void my_cbreak() { /* because curses makes me curse */
   new_termios.c_iflag &= ~(INLCR | ICRNL | IXON | IXOFF);
   new_termios.c_oflag &= ~(OPOST);
   new_termios.c_lflag &= ~(ECHO | ICANON);
+  new_termios.c_cc[VMIN] = 0;
+  new_termios.c_cc[VTIME] = 0;
   if (tcsetattr(stdin_fd, TCSANOW, &new_termios) < 0) {
     perror("tcsetattr");
     exit(1);
@@ -176,6 +181,39 @@ void dump_ops() {
   }
 }
 
+struct timeval last_samples;
+
+enum { samples_per_second = 8000 };
+
+void spew_audio() {
+  struct timeval now, elapsed, tmp;
+  int n_samples;
+  gettimeofday(&now, NULL);
+  timersub(&now, &last_samples, &elapsed);
+  n_samples = (elapsed.tv_sec * 1000000 + 
+               elapsed.tv_usec +
+               500000) * samples_per_second / 1000000;
+  //fprintf(stderr, "%d.%06d elapsed, %d samples\r\n", (int)elapsed.tv_sec, (int)elapsed.tv_usec, n_samples);
+  n_samples = 4 * (n_samples / 4);  /* 4 samples per buf */
+  /* Now adjust last_samples to account for the samples we're about to emit */
+  elapsed.tv_sec = 0;
+  elapsed.tv_usec = n_samples * 1000000 / samples_per_second;
+  /* Not sure timeradd is safe with aliased arguments. */
+  timeradd(&last_samples, &elapsed, &tmp);
+  last_samples = tmp;
+
+  /* Now finally emit the samples */
+  for (; n_samples > 0; n_samples -= 4) {
+    sample *data = interpret_ops();
+    unsigned char buf[4];
+    int i;
+    //printf("data is %04x %04x %04x %04x\r\n", data[0], data[1], data[2], data[3]);
+    for (i = 0; i < 4; i++) buf[i] = data[i];
+    u8_audio_write(buf, 4);
+    configuration.t += 4;
+  }
+}
+
 int main() {
   int x = 10, y = 3;
   char c;
@@ -183,6 +221,7 @@ int main() {
 
   update_numbers();
   update_columns();
+  gettimeofday(&last_samples, NULL);
   my_cbreak();
 
   while (!done) {
@@ -193,6 +232,7 @@ int main() {
     dump_ops();
 
     while (!read(stdin_fd, &c, 1)) {
+      spew_audio();
       usleep(20*1000); /* sort of a busywait */
     }
     switch(c) {

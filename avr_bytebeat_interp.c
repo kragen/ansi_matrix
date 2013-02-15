@@ -206,12 +206,16 @@ sample *interpret_ops() {
    */
   for (op = 0; op < ops_length; op++) {
     op_table[get_opcode(ops[op])](get_row_id(ops[op]));
+    /* printf("after op %d, accumulator is %04x %04x %04x %04x\r\n", */
+    /*        op, accumulator[0], accumulator[1], accumulator[2], accumulator[3]); */
   }
 
   accumulator[0] >>= configuration.audioshift;
   accumulator[1] >>= configuration.audioshift;
   accumulator[2] >>= configuration.audioshift;
   accumulator[3] >>= configuration.audioshift;
+  /* printf("after final shifts, accumulator is %04x %04x %04x %04x\r\n", */
+  /*        accumulator[0], accumulator[1], accumulator[2], accumulator[3]); */
 
   return accumulator;
 }
