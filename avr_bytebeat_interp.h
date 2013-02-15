@@ -17,3 +17,6 @@ extern struct bytebeat_interp_configuration {
 
 void compile_matrix(void);
 sample *interpret_ops(void);
+
+void disassemble_op(int op_index, char *dest);
+int n_ops(void);

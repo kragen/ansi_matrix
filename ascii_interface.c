@@ -167,6 +167,15 @@ void draw_table(int x, int y) {
   }
 }
 
+void dump_ops() {
+  int i;
+  char buf[64];
+  for (i = 0; i < n_ops(); i++) {
+    disassemble_op(i, buf);
+    printf("%s\r\n", buf);
+  }
+}
+
 int main() {
   int x = 10, y = 3;
   char c;
@@ -180,6 +189,8 @@ int main() {
     printf("\e[H\e[J");
     draw_table(x, y);
     dump_configuration();
+    compile_matrix();
+    dump_ops();
 
     while (!read(stdin_fd, &c, 1)) {
       usleep(20*1000); /* sort of a busywait */

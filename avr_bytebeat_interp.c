@@ -65,6 +65,8 @@ topological sorting.
  
 */
 
+#include <stdio.h>
+
 #include "avr_bytebeat_interp.h"
 
 /* A little analysis of and_row's assembly listing suggests that it spends about:
@@ -276,4 +278,21 @@ void compile_matrix() {
     1 << shift3_row_id;
     
   compile_column(audio_col_id);
+}
+
+void disassemble_op(int op_index, char *dest) {
+  char *format;
+  switch(get_opcode(ops[op_index])) {
+  case op_and: format = "a &= r[%d];"; break;
+  case op_clear: format = "a = -1;"; break;
+  case op_set: format = "r[%d] = a;"; break;
+  case op_add: format = "r[%d) += a;"; break;
+  case op_mul: format = "r[%d] *= a;"; break;
+  case op_xor: format = "r[%d] ^= a;"; break;
+  }
+  sprintf(dest, format, get_row_id(ops[op_index]));
+}
+
+int n_ops() {
+  return ops_length;
 }
