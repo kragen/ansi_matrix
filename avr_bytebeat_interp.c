@@ -15,6 +15,9 @@ All the numbers are changeable by twisting knobs, and the xes are
 toggleable buttons which connect the given source (on the left) to the
 given sink (on the bottom).
 
+At the moment, it uses 169 bytes of RAM and 1264 bytes of program
+memory, if I'm reading my compiler output right.
+
 */
 
 
@@ -284,6 +287,9 @@ void compile_matrix() {
   compile_column(audio_col_id);
 }
 
+#ifndef AVR
+/* not going to include the disassembler in the AVR microcontroller */
+
 void disassemble_op(int op_index, char *dest) {
   char *format;
   switch(get_opcode(ops[op_index])) {
@@ -300,3 +306,5 @@ void disassemble_op(int op_index, char *dest) {
 int n_ops() {
   return ops_length;
 }
+
+#endif
