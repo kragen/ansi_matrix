@@ -24,6 +24,28 @@ char *labels[n_rows][n_columns] = {
 char *allocated_labels[n_rows][n_columns];
 enum { label_size = 64 }; /* max allocated size */
 
+/* Dummy to remove when integrate with avr_bytebeat_interp */
+struct {
+  int constant, shift1, shift2, shift3, audioshift, columns[n_columns-1];
+} configuration;
+
+#define LEN(x) (sizeof(x)/sizeof((x)[0]))
+
+void dump_configuration() {
+  int i;
+  printf("constant = %d\r\n", configuration.constant);
+  printf("shift1 = %d\r\n", configuration.shift1);
+  printf("shift2 = %d\r\n", configuration.shift2);
+  printf("shift3 = %d\r\n", configuration.shift3);
+  printf("audioshift = %d\r\n", configuration.audioshift);
+  printf("columns = {");
+  for (i = 0; i < LEN(configuration.columns); i++) {
+    if (i) printf(", ");
+    printf("0x%x", configuration.columns[i]);
+  }
+  printf("}\r\n");
+}
+
 enum { stdin_fd = 0 };
 struct termios old_termios, new_termios;
 void my_cbreak() { /* because curses makes me curse */
@@ -63,12 +85,54 @@ char *num_of(char *label) {
   return strpbrk(label, "0123456789");
 }
 
+void update_number(int x, int y, int num) {
+  if (x == 0) {
+    if (y == 0) {
+      configuration.constant = num;
+    } else if (y == 1) {
+      configuration.shift1 = num;
+    } else if (y == 2) {
+      configuration.shift2 = num;
+    } else if (y == 3) {
+      configuration.shift3 = num;
+    }
+  } else if (x == n_columns - 1 && y == n_rows - 1) {
+    configuration.audioshift = num;
+  }
+}
+
+/* This is stupid! */
+void update_numbers() {
+  int i, j;
+  for (i = 0; i < n_columns; i++) {
+    for (j = 0; j < n_rows; j++) {
+      if (num_of(labels[j][i])) {
+	update_number(i, j, atoi(num_of(labels[j][i])));
+      }
+    }
+  }
+}
+
+void update_columns() {
+  int i, j, column;
+  for (i = 1; i < n_columns; i++) {
+    column = 0;
+    for (j = n_rows-2; j >= 0; j--) {
+      column <<= 1;
+      if (strlen(labels[j][i])) column++;
+    }
+    configuration.columns[i-1] = column;
+  }
+}
+
 void change_cell(int x, int y, char change) {
   char *lab = labels[y][x];
   if (!strlen(lab)) {
     labels[y][x] = "x";
+    update_columns();
   } else if (strcmp(lab, "x") == 0) {
     labels[y][x] = "";
+    update_columns();
   } else if (num_of(lab)) {
     char *numloc;
     int num;
@@ -77,6 +141,7 @@ void change_cell(int x, int y, char change) {
     num += (change == ' ' || change == '+') ? 1 : -1;
     if (num < 0) num = 0;
     sprintf(numloc, "%d", num);
+    update_number(x, y, num);
   }
 }
 
@@ -110,11 +175,15 @@ int main() {
   char c;
   int done = 0;
 
+  update_numbers();
+  update_columns();
   my_cbreak();
 
   while (!done) {
     printf("\e[H\e[J");
     draw_table(x, y);
+    dump_configuration();
+
     while (!read(stdin_fd, &c, 1)) {
       usleep(20*1000); /* sort of a busywait */
     }
