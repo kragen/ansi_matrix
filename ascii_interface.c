@@ -167,7 +167,7 @@ void draw_table(int x, int y) {
     for (j = 0; j < n_columns; j++) {
       char *after = "";
       if (i == y && j == x) {
-	printf("\e[47m");
+	printf("\e[47;35m");
 	after = "\e[0m";
       }
       printf("%*s %s", column_width[j], labels[i][j], after);
