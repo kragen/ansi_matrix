@@ -77,12 +77,15 @@ int main() {
   while (!done) {
     printf("\e[H\e[J");
     draw_table(x, y);
-    while (!read(stdin_fd, &c, 1));
+    while (!read(stdin_fd, &c, 1)) {
+      usleep(20*1000); /* sort of a busywait */
+    }
     switch(c) {
     case 'h': x = (x - 1 + n_columns) % n_columns; break;
     case 'j': y = (y + 1 + n_rows)    % n_rows;    break;
     case 'k': y = (y - 1 + n_rows)    % n_rows;    break;
     case 'l': x = (x + 1 + n_columns) % n_columns; break;
+    case ' ': labels[y][x] = strlen(labels[y][x]) ? "" : "x"; break;
     case '\e': case 'q': case 'x': done = 1; break;
     }
   }
