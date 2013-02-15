@@ -2,14 +2,14 @@
 
 This interprets a bytebeat expression entered in the form of a matrix:
 
-42        x   x   x   x   x   x   x   x   x   x
-t<<3      x   x   x   x   x   x   x   x   x   x
-t<<5      x   x   x   x   x   x   x   x   x   x
-t<<7      x   x   x   x   x   x   x   x   x   x
-xa^xb^xc  x   x   x   x   x   x   x   x   x   x
-pa*pb*pc  x   x   x   x   x   x   x   x   x   x
-sa+sb+sc  x   x   x   x   x   x   x   x   x   x
--         sa  sb  sc  pa  pb  pc  xa  xb  xc  audio<<9
+42<<6             x   x   x   x   x   x   x   x   x   x
+t<<3              x   x   x   x   x   x   x   x   x   x
+t<<5              x   x   x   x   x   x   x   x   x   x
+t<<7              x   x   x   x   x   x   x   x   x   x
+xa^xb^xc          x   x   x   x   x   x   x   x   x   x
+(pa*pb>>4)*pc>>4  x   x   x   x   x   x   x   x   x   x
+sa+sb+sc          x   x   x   x   x   x   x   x   x   x
+-                 sa  sb  sc  pa  pb  pc  xa  xb  xc  audio<<9
 
 All the numbers are changeable by twisting knobs, and the xes are
 toggleable buttons which connect the given source (on the left) to the
@@ -58,7 +58,7 @@ need a stack at all, just an accumulator, with the operations:
 - accumulator &= row[n]
 - row[n] := accumulator
 - row[n] += accumulator
-- row[n] *= accumulator
+- row[n] = row[n] * accumulator >> 4
 - row[n] ^= accumulator
 
 plus the initialization of the rows that aren't computed from columns.
@@ -130,7 +130,10 @@ static void add_row(row_id row_num) {
 }
 
 static void mul_row(row_id row_num) {
-  row_op(*=);
+  rows[row_num][0] = (long)rows[row_num][0] * accumulator[0] >> 4;
+  rows[row_num][1] = (long)rows[row_num][1] * accumulator[1] >> 4;
+  rows[row_num][2] = (long)rows[row_num][2] * accumulator[2] >> 4;
+  rows[row_num][3] = (long)rows[row_num][3] * accumulator[3] >> 4;
 }
 
 static void xor_row(row_id row_num) {
@@ -292,15 +295,16 @@ void compile_matrix() {
 
 void disassemble_op(int op_index, char *dest) {
   char *format;
+  int row_id = get_row_id(ops[op_index]);
   switch(get_opcode(ops[op_index])) {
   case op_and: format = "a &= r[%d];"; break;
   case op_clear: format = "a = -1;"; break;
   case op_set: format = "r[%d] = a;"; break;
   case op_add: format = "r[%d] += a;"; break;
-  case op_mul: format = "r[%d] *= a;"; break;
+  case op_mul: format = "r[%d] = r[%d] * a >> 4;"; break;
   case op_xor: format = "r[%d] ^= a;"; break;
   }
-  sprintf(dest, format, get_row_id(ops[op_index]));
+  sprintf(dest, format, row_id, row_id);
 }
 
 int n_ops() {

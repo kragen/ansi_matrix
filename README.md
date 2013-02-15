@@ -38,6 +38,7 @@ highlight.
 WARNING
 -------
 
+With a slightly earlier version,
 I was trying to reproduce Madgarden's well-known bytebeat Starlost
 (whose simplest form is `3*(x^x%255)`) and with the following noise:
 
@@ -67,5 +68,18 @@ My best hypothesis is that the horrifying noise coming from the nearby
 netbook speakers vibrated the disk to the point where it stopped
 working!
 
-(That version of Starlost *does* work if you compile to use 32-bit
-longs instead of 16-bit shorts.)
+(That version of Starlost *did* work if you compile to use 32-bit
+longs instead of 16-bit shorts.  I redefined multiplication to make it
+doable in 16 bits:
+
+                3<<6           x                         
+                t<<0  x                                  
+                t<<8     x                    x          
+                t<<3                                     
+            xa^xb^xc                 x                   
+    (pa*pb>>4)*pc>>4                                   x 
+            sa+sb+sc                       x             
+                   - sa sb sc pa pb pc xa xb xc audio<<5 
+
+
+)
