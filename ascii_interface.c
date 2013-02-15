@@ -45,6 +45,15 @@ void restore_terminal() {
   tcsetattr(stdin_fd, TCSANOW, &old_termios);
 }
 
+void change_cell(int x, int y, char change) {
+  char *lab = labels[y][x];
+  if (!strlen(lab)) {
+    labels[y][x] = "x";
+  } else if (strcmp(lab, "x") == 0) {
+    labels[y][x] = "";
+  }
+}
+
 void draw_table(int x, int y) {
   int i, j;
   for (i = 0; i < n_rows; i++) {
@@ -85,7 +94,7 @@ int main() {
     case 'j': y = (y + 1 + n_rows)    % n_rows;    break;
     case 'k': y = (y - 1 + n_rows)    % n_rows;    break;
     case 'l': x = (x + 1 + n_columns) % n_columns; break;
-    case ' ': labels[y][x] = strlen(labels[y][x]) ? "" : "x"; break;
+    case ' ': change_cell(x, y, c); break;
     case '\e': case 'q': case 'x': done = 1; break;
     }
   }
